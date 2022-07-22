@@ -1,15 +1,28 @@
 import { APIGatewayEvent } from "aws-lambda";
 import { generateResponse } from "./utils";
-import productList from "../mocks/productList.json";
-import { Product } from "../types/product";
+import { getDbPool } from "../DB/connection";
+import { getProductListQuery } from "../DB/queries";
 
 export const getProductsById = async (event: APIGatewayEvent) => {
+  let pool;
   try {
-    const productId = event.pathParameters && event.pathParameters.productId;
-    const product : Product = productList.find((product) => product.id === productId) as Product;
-    if(!product) throw new Error("Product not found"); 
+    console.log(event);
+    const { productId } = event.pathParameters || {};
+    if (!productId) throw new Error("ProductId is required");
 
-    return generateResponse(200, { message: "Successfull", product });
+    pool = getDbPool();
+    if (pool) {
+      const { rows: availableProducts } = await pool.query(
+        getProductListQuery(productId)
+      );
+
+      if (!availableProducts.length) throw new Error("Product not found");
+
+      return generateResponse(200, {
+        message: "Successfull",
+        products: availableProducts,
+      });
+    } else throw new Error("Pool is not available");
   } catch (error: any) {
     return generateResponse(500, { message: "Error", error: error.message });
   }

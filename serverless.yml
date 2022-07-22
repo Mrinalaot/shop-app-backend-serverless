@@ -21,6 +21,13 @@ provider:
   name: aws
   runtime: nodejs14.x
   lambdaHashingVersion: 20201221
+  environment:
+    PGHOST: ${file(./config.${opt:stage, 'dev'}.json):PGHOST}
+    PGPORT: ${file(./config.${opt:stage, 'dev'}.json):PGPORT}
+    PGUSER: ${file(./config.${opt:stage, 'dev'}.json):PGUSER}
+    PGPASSWORD: ${file(./config.${opt:stage, 'dev'}.json):PGPASSWORD}
+    PGDATABASE: ${file(./config.${opt:stage, 'dev'}.json):PGDATABASE}
+
 
 
 # you can define service wide environment variables here
@@ -42,6 +49,14 @@ functions:
       - http:
           path: /products/{productId}
           method: get
+          cors: true
+
+  createProduct:
+    handler: src/create_handler.createProduct
+    events:
+      - http:
+          path: /products
+          method: POST
           cors: true
   
 
