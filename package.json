@@ -29,6 +29,7 @@
     "chai": "^4.3.6",
     "mocha": "^10.0.0",
     "nyc": "^15.1.0",
+    "serverless-auto-swagger": "^2.8.2",
     "serverless-offline": "^8.8.0",
     "serverless-plugin-typescript": "^2.1.2",
     "sinon": "^14.0.0",
