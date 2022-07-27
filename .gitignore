@@ -41,3 +41,5 @@ dist
 .serverless/
 
 
+# Env Config
+config.dev.json
