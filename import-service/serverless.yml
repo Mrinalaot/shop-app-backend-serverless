@@ -16,12 +16,14 @@ frameworkVersion: '2'
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
-  - serverless-auto-swagger
+  # - serverless-auto-swagger
 
 provider:
   name: aws
   runtime: nodejs14.x
   lambdaHashingVersion: 20201221
+  environment:
+    BUCKET: ${file(./config.${opt:stage, 'dev'}.json):BUCKET}
   iamRoleStatements:
     - Effect: "Allow"
       Action: "s3:ListBucket"
@@ -35,9 +37,6 @@ provider:
 
 
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
 
 functions:
   importProductsFile:
@@ -56,7 +55,7 @@ functions:
     handler: src/parser_handler.importFileParser
     events:
       - s3:
-          bucket: /uploaded
+          bucket: cloudx-uploaded
           event: s3:ObjectCreated:*
           existing: true
 
