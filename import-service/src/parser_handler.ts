@@ -1,7 +1,9 @@
 import { S3CreateEvent } from "aws-lambda";
 import csv from "csv-parser";
 import { S3 } from "aws-sdk";
+import SQS, { SendMessageRequest } from "aws-sdk/clients/sqs";
 const s3Client = new S3({ region: "us-east-1" });
+const sqs = new SQS({ region: "us-east-1" });
 
 export const importFileParser = async (event: S3CreateEvent) => {
   for (const record of event.Records) {
@@ -13,8 +15,21 @@ export const importFileParser = async (event: S3CreateEvent) => {
 
     const s3Stream = s3Client.getObject(params).createReadStream();
 
-    const parsedResults = await parseStreamByCSVParser(s3Stream);
+    const parsedResults: any = await parseStreamByCSVParser(s3Stream);
     console.log("parsedResults", parsedResults);
+
+    for (const productParsedItem of parsedResults) {
+      try {
+        const sqsRequest: SendMessageRequest = {
+          QueueUrl: process.env.SQS_URL || "",
+          MessageBody: JSON.stringify(productParsedItem),
+        };
+        await sqs.sendMessage(sqsRequest).promise();
+      } catch (error: any) {
+        console.log('SQS Error: ', error.message);
+        throw error;
+      }
+    }
 
     const success = await copyFileToParsedDir(bucket, object);
     if (success) {

@@ -18,6 +18,10 @@ plugins:
   - serverless-offline
   # - serverless-auto-swagger
 
+environment:
+  SQS_NEW_PRODUCT_URL:
+    Ref: NewProductSQSQueue
+
 provider:
   name: aws
   runtime: nodejs14.x
@@ -34,9 +38,22 @@ provider:
         - "s3:*"
       Resource:
         - "arn:aws:s3:::cloudx-uploaded/*"
+    - Effect: "Allow"
+      Action: "sqs:*"
+      Resource: 
+        - "arn:aws: sqs:eu-west-1:566100373539:CloudX-queue"
 
 
-
+resources:
+  Resources:
+    NewProductSQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItemsQueue
+  Outputs:
+    NewProductSQSQueueArn:
+      Value:
+        Fn::GetAtt: [NewProductSQSQueue, Arn]
 
 functions:
   importProductsFile:
